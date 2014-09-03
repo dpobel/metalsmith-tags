@@ -21,7 +21,7 @@ describe('metalsmith-tags', function () {
             }))
             .build(function (err, files) {
                 if (err) return done(err);
-                assert.equal(files['index.html'].tags.toString(),["hello","world","this-is","tag"].toString());
+                assert.equal(files['index.html'].tags.toString(),["hello","world","this is","tag"].toString());
                 done();
             });
     });
@@ -39,6 +39,33 @@ describe('metalsmith-tags', function () {
             .build(function (err, files) {
                 if (err) return done(err);
                 equal('test/fixtures/expected/topics', 'test/fixtures/build/topics');
+                done();
+            });
+    });
+
+    it('should build a global list of tags', function (done) {
+        var metalsmith = Metalsmith('test/fixtures');
+        var expectedTags = ['hello', 'world', 'this is', 'tag', 'this'];
+
+        metalsmith
+            .use(tags({
+                handle: 'tags',
+                path:'topics'
+            }))
+            .build(function (err, files) {
+                var metadata = metalsmith.metadata();
+
+                if (err) return done(err);
+
+                assert.ok(typeof metadata.tagsList === 'object');
+                assert.equal(Object.keys(metadata.tagsList).length, expectedTags.length);
+                expectedTags.forEach(function (expectedTag) {
+                    var tagObject = metadata.tagsList[expectedTag];
+
+                    assert.ok(typeof tagObject === 'object');
+                    assert.strictEqual(tagObject, files[tagObject.path]);
+                });
+
                 done();
             });
     });
